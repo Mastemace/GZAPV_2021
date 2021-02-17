@@ -1,12 +1,8 @@
 import cv2 as cv
-import numpy as np
 
 
 def main():
     map_size = 5
-
-    kernel = np.ones((map_size, map_size))
-    kernel /= np.sum(kernel)
 
     handler = cv.VideoCapture('data/input.mp4')
 
