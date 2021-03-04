@@ -5,15 +5,14 @@ import pandas
 from tqdm import tqdm
 from scipy.signal.windows import triang
 import psutil
-import math
 
 
 def main():
     res = 1024
     factor = 3
-    train_size = 200
-    test_size = 150
-
+    train_size = 1000
+    test_size = 2000
+    
     svm = train_folder(sorted(glob('./data/train/*.*'))[:train_size], res, factor)
     predict_folder(svm, sorted(glob('./data/test/*.*'))[:test_size], res, factor)
 
@@ -62,15 +61,13 @@ def equalize(img):
     return img
 
 
-def ram(paths, res, train, ncols=10):
-    tot = psutil.virtual_memory().total / 1024 / 1024
-    exp = (psutil.virtual_memory().used + len(paths) * res * res * 4 * (2 if train else 1)) / 1024 / 1024
-    diff = math.ceil(exp * ncols / tot)
-    col = 2 if exp < tot / 2 else 3 if exp < tot else 1
-    full = "▉" * min(diff, ncols)
-    empty = " " * min(ncols - diff, ncols)
+def ram(paths, res, train):
+    tot = psutil.virtual_memory().total // 1024 // 1024
+    exp = (psutil.virtual_memory().used + len(paths) * res * res * 4 * (2 if train else 1)) // 1024 // 1024
+    col = "green" if exp < tot / 2 else "yellow" if exp < tot else "red"
 
-    print(f"\33[9{col}mExpected RAM usage: {exp / tot : 4.0%} |{full}{empty}| {exp : ,.0f}/{tot : ,.0f}MB\33[0m")
+    for _ in tqdm(range(tot), initial=exp, colour=col, bar_format='Expected RAM usage up to: {percentage:3.0f}% |{bar}| {n_fmt}/{total_fmt}MB'):
+        break
 
     if exp > tot:
         exit(-1)
